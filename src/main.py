@@ -230,8 +230,10 @@ class App(tk.Tk):
             
             try:
                 proc = subprocess.run([self.config["hasher_path"], str(console_id), file_path], 
-                                      capture_output=True, text=True, check=True)
+                                      capture_output=True, text=True)
                 output = proc.stdout.strip()
+                if proc.returncode != 0 and not output:
+                    raise Exception(f"Command returned non-zero exit status {proc.returncode}. Stderr: {proc.stderr.strip()}")
                 # first token of first non-empty line
                 first_line = next((line for line in output.split("\\n") if line.strip()), "")
                 file_hash = first_line.split()[0] if first_line else ""
