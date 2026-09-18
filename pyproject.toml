@@ -1,0 +1,22 @@
+[project]
+name = "py-hashchecker"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Faleh Alotaibi", email = "121350271+f-alotaibi@users.noreply.github.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "api-python",
+]
+
+[project.scripts]
+py-hashchecker = "main:main"
+
+[build-system]
+requires = ["uv_build>=0.12.7,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.sources]
+api-python = { git = "https://github.com/RetroAchievements/api-python", rev = "f6ef9be95d400927e9bda774538053d5ec7080cf" }

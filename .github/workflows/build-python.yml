@@ -1,0 +1,65 @@
+name: Build Python App
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v2
+      with:
+        version: "latest"
+
+    - name: Setup Python
+      run: uv python install 3.14
+
+    - name: Install dependencies
+      run: uv sync
+
+    - name: Build Executable (Windows / Linux)
+      if: matrix.os != 'macos-latest'
+      run: |
+        uv pip install pyinstaller
+        uv run pyinstaller --noconfirm --onefile --windowed --name "RAHashChecker" src/main.py
+
+    - name: Build Executable (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        uv pip install pyinstaller
+        uv run pyinstaller --noconfirm --windowed --name "RAHashChecker" src/main.py
+        # For macOS, pyinstaller with --windowed creates an .app bundle
+        # We need to zip it so it can be uploaded as an artifact properly
+        cd dist
+        zip -r RAHashChecker-macOS.zip RAHashChecker.app
+
+    - name: Upload Artifact (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: RAHashChecker-Windows
+        path: dist/RAHashChecker.exe
+
+    - name: Upload Artifact (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: RAHashChecker-Linux
+        path: dist/RAHashChecker
+
+    - name: Upload Artifact (macOS)
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: RAHashChecker-macOS
+        path: dist/RAHashChecker-macOS.zip
